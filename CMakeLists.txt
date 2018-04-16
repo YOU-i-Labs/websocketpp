@@ -4,6 +4,12 @@
 # cmake for the dependency find macros etc. to be up to date.
 cmake_minimum_required (VERSION 2.8.8)
 
+include("cmake/HunterGate.cmake")
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.20.41.tar.gz"
+    SHA1 "e8e77b69fc2ca66808091e781cc06bcb02724443"
+)
+
 ############ Paths
 
 set (WEBSOCKETPP_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
