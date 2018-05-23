@@ -217,30 +217,30 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
     set (Boost_USE_MULTITHREADED TRUE)
     set (Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1") # todo: someone who knows better spesify these!
 
-    find_package (Boost 1.39.0 COMPONENTS "${WEBSOCKETPP_BOOST_LIBS}")
+    # find_package (Boost 1.39.0 COMPONENTS "${WEBSOCKETPP_BOOST_LIBS}")
 
-    if (Boost_FOUND)
-        # Boost is a project wide global dependency.
-        include_directories (${Boost_INCLUDE_DIRS})
-        link_directories (${Boost_LIBRARY_DIRS})
+    # if (Boost_FOUND)
+    #     # Boost is a project wide global dependency.
+    #     include_directories (${Boost_INCLUDE_DIRS})
+    #     link_directories (${Boost_LIBRARY_DIRS})
 
-        # Pretty print status
-        message (STATUS "-- Include Directories")
-        foreach (include_dir ${Boost_INCLUDE_DIRS})
-            message (STATUS "       " ${include_dir})
-        endforeach ()
-        message (STATUS "-- Library Directories")
-        foreach (library_dir ${Boost_LIBRARY_DIRS})
-            message (STATUS "       " ${library_dir})
-        endforeach ()
-        message (STATUS "-- Libraries")
-        foreach (boost_lib ${Boost_LIBRARIES})
-            message (STATUS "       " ${boost_lib})
-        endforeach ()
-        message ("")
-    else ()
-        message (FATAL_ERROR "Failed to find required dependency: boost")
-    endif ()
+    #     # Pretty print status
+    #     message (STATUS "-- Include Directories")
+    #     foreach (include_dir ${Boost_INCLUDE_DIRS})
+    #         message (STATUS "       " ${include_dir})
+    #     endforeach ()
+    #     message (STATUS "-- Library Directories")
+    #     foreach (library_dir ${Boost_LIBRARY_DIRS})
+    #         message (STATUS "       " ${library_dir})
+    #     endforeach ()
+    #     message (STATUS "-- Libraries")
+    #     foreach (boost_lib ${Boost_LIBRARIES})
+    #         message (STATUS "       " ${boost_lib})
+    #     endforeach ()
+    #     message ("")
+    # else ()
+    #     message (FATAL_ERROR "Failed to find required dependency: boost")
+    # endif ()
 
     find_package(OpenSSL)
     find_package(ZLIB)
@@ -267,22 +267,15 @@ if(HUNTER_ENABLED)
 
   add_library(websocketpp INTERFACE)
 
-  hunter_add_package(Boost COMPONENTS system random thread)
-  hunter_add_package(OpenSSL)
-  hunter_add_package(ZLIB)
+  # hunter_add_package(Boost COMPONENTS system random thread)
+  # hunter_add_package(OpenSSL)
+  # hunter_add_package(ZLIB)
 
-  find_package(OpenSSL REQUIRED)
-  find_package(ZLIB CONFIG REQUIRED)
-  find_package(Boost CONFIG COMPONENTS system random thread)
+  # find_package(OpenSSL REQUIRED)
+  # find_package(ZLIB CONFIG REQUIRED)
+  # find_package(Boost CONFIG COMPONENTS system random thread)
 
-  target_link_libraries(websocketpp INTERFACE
-    ${CMAKE_DL_LIBS}
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    ZLIB::zlib
-    Boost::system
-    Boost::random
-    Boost::thread)
+  target_link_libraries(websocketpp INTERFACE ${CMAKE_DL_LIBS})
 
   if(MSVC)
     target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_FUNCTIONAL_)
@@ -295,7 +288,10 @@ if(HUNTER_ENABLED)
 
   target_include_directories(websocketpp INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/websocketpp>
-    $<INSTALL_INTERFACE:${include_install_dir}>)
+    $<INSTALL_INTERFACE:${include_install_dir}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/boost>
+    $<INSTALL_INTERFACE:${include_install_dir}>/boost)
+  )
 
   set(config_export_name "${PROJECT_NAME}Config")
   set(targets_export_name "${PROJECT_NAME}Targets")
@@ -323,6 +319,17 @@ if(HUNTER_ENABLED)
     DIRECTORY "websocketpp"
     DESTINATION "${include_install_dir}"
     PATTERN CMakeLists.txt EXCLUDE)
+
+  # YouI -> matches the same install as folly.
+  install(
+    DIRECTORY "boost"
+    DESTINATION "${include_install_dir}"
+    PATTERN "spirit/*" EXCLUDE
+    PATTERN "fusion/*" EXCLUDE
+    PATTERN "phoenix/*" EXCLUDE
+    PATTERN "hana/*" EXCLUDE
+    PATTERN "mpl/*" EXCLUDE
+    )
 
   install(
     EXPORT "${targets_export_name}"
