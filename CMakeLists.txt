@@ -251,8 +251,9 @@ if(HUNTER_ENABLED)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/websocketpp>
     $<INSTALL_INTERFACE:${include_install_dir}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/boost>
-    $<INSTALL_INTERFACE:${include_install_dir}>/boost)
+    $<INSTALL_INTERFACE:${include_install_dir}>/boost
   )
+  
 
   set(config_export_name "${PROJECT_NAME}Config")
   set(targets_export_name "${PROJECT_NAME}Targets")
