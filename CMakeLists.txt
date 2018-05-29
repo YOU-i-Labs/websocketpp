@@ -290,7 +290,6 @@ if(HUNTER_ENABLED)
     PATTERN "fusion/*" EXCLUDE
     PATTERN "phoenix/*" EXCLUDE
     PATTERN "hana/*" EXCLUDE
-    PATTERN "mpl/*" EXCLUDE
     )
 
   install(
