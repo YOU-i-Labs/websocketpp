@@ -250,8 +250,6 @@ if(HUNTER_ENABLED)
   target_include_directories(websocketpp INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/websocketpp>
     $<INSTALL_INTERFACE:${include_install_dir}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/boost>
-    $<INSTALL_INTERFACE:${include_install_dir}>/boost
   )
   
 
