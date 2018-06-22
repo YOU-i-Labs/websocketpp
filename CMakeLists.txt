@@ -236,7 +236,9 @@ if(HUNTER_ENABLED)
 
   add_library(websocketpp INTERFACE)
 
-  target_link_libraries(websocketpp INTERFACE ${CMAKE_DL_LIBS})
+  if (NOT TIZEN_NACL)
+    target_link_libraries(websocketpp INTERFACE ${CMAKE_DL_LIBS})
+  endif()
 
   if(MSVC)
     target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_FUNCTIONAL_)
