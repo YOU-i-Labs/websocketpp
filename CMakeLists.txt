@@ -276,13 +276,15 @@ if(HUNTER_ENABLED)
   find_package(Boost CONFIG COMPONENTS system random thread)
 
   target_link_libraries(websocketpp INTERFACE
-    ${CMAKE_DL_LIBS}
     OpenSSL::SSL
     OpenSSL::Crypto
     ZLIB::zlib
     Boost::system
     Boost::random
     Boost::thread)
+  if (NOT TIZEN_NACL)
+    target_link_libraries(websocketpp INTERFACE ${CMAKE_DL_LIBS})
+  endif()
 
   if(MSVC)
     target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_FUNCTIONAL_)
