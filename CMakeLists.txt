@@ -236,7 +236,7 @@ if(HUNTER_ENABLED)
 
   add_library(websocketpp INTERFACE)
 
-  if (NOT TIZEN_NACL)
+  if (NOT TIZEN_NACL AND NOT PS4)
     target_link_libraries(websocketpp INTERFACE ${CMAKE_DL_LIBS})
   endif()
 
