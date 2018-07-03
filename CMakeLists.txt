@@ -282,7 +282,8 @@ if(HUNTER_ENABLED)
     Boost::system
     Boost::random
     Boost::thread)
-  if (NOT TIZEN_NACL)
+
+  if (NOT TIZEN_NACL AND NOT PS4)
     target_link_libraries(websocketpp INTERFACE ${CMAKE_DL_LIBS})
   endif()
 
