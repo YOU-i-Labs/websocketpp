@@ -284,12 +284,9 @@ if(HUNTER_ENABLED)
 
   # YouI -> matches the same install as folly.
   install(
-    DIRECTORY "boost"
+    DIRECTORY "asio/include/"
     DESTINATION "${include_install_dir}"
-    PATTERN "spirit/*" EXCLUDE
-    PATTERN "fusion/*" EXCLUDE
-    PATTERN "phoenix/*" EXCLUDE
-    PATTERN "hana/*" EXCLUDE
+    FILES_MATCHING PATTERN "**/*.*pp"
     )
 
   install(
