@@ -249,6 +249,8 @@ if(HUNTER_ENABLED)
     target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_STL_)
   endif()
 
+  target_compile_definitions(websocketpp INTERFACE ASIO_DISABLE_STD_EXPERIMENTAL_STRING_VIEW)
+
   target_include_directories(websocketpp INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/websocketpp>
     $<INSTALL_INTERFACE:${include_install_dir}>
