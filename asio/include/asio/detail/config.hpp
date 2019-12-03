@@ -111,6 +111,9 @@
 #    define ASIO_HAS_MOVE 1
 #   endif // (_MSC_VER >= 1700)
 #  endif // defined(ASIO_MSVC)
+# if defined(__ORBIS__)
+#  define ASIO_HAS_MOVE 1
+# endif // defined(__ORBIS__)
 # endif // !defined(ASIO_DISABLE_MOVE)
 #endif // !defined(ASIO_HAS_MOVE)
 
@@ -169,6 +172,9 @@
 #    define ASIO_HAS_VARIADIC_TEMPLATES 1
 #   endif // (_MSC_VER >= 1900)
 #  endif // defined(ASIO_MSVC)
+#  if defined(__ORBIS__)
+#   define ASIO_HAS_VARIADIC_TEMPLATES 1
+#  endif // defined(__ORBIS__)
 # endif // !defined(ASIO_DISABLE_VARIADIC_TEMPLATES)
 #endif // !defined(ASIO_HAS_VARIADIC_TEMPLATES)
 
@@ -191,6 +197,9 @@
 #   define ASIO_DELETED = delete
 #  endif // (_MSC_VER >= 1900)
 # endif // defined(ASIO_MSVC)
+#  if defined(__ORBIS__)
+#   define ASIO_DELETED = delete
+#  endif // defined(__ORBIS__)
 # if !defined(ASIO_DELETED)
 #  define ASIO_DELETED
 # endif // !defined(ASIO_DELETED)
@@ -216,6 +225,9 @@
 #    define ASIO_HAS_CONSTEXPR 1
 #   endif // (_MSC_VER >= 1900)
 #  endif // defined(ASIO_MSVC)
+#  if defined(__ORBIS__)
+#   define ASIO_HAS_CONSTEXPR 1
+#  endif // defined(__ORBIS__)
 # endif // !defined(ASIO_DISABLE_CONSTEXPR)
 #endif // !defined(ASIO_HAS_CONSTEXPR)
 #if !defined(ASIO_CONSTEXPR)
@@ -250,6 +262,10 @@
 #    define ASIO_NOEXCEPT_OR_NOTHROW noexcept(true)
 #   endif // (_MSC_VER >= 1900)
 #  endif // defined(ASIO_MSVC)
+#  if defined(__ORBIS__)
+#    define ASIO_NOEXCEPT noexcept(true)
+#    define ASIO_NOEXCEPT_OR_NOTHROW noexcept(true)
+#  endif // defined(__ORBIS__)
 # endif // !defined(ASIO_DISABLE_NOEXCEPT)
 # if !defined(ASIO_NOEXCEPT)
 #  define ASIO_NOEXCEPT
@@ -279,6 +295,9 @@
 #    define ASIO_HAS_DECLTYPE 1
 #   endif // (_MSC_VER >= 1700)
 #  endif // defined(ASIO_MSVC)
+#  if defined(__ORBIS__)
+#    define ASIO_HAS_DECLTYPE 1
+#  endif // defined(__ORBIS__)
 # endif // !defined(ASIO_DISABLE_DECLTYPE)
 #endif // !defined(ASIO_HAS_DECLTYPE)
 
@@ -1163,6 +1182,7 @@
 #   else // defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
 #    define ASIO_HAS_GETADDRINFO 1
 #   endif // defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
+#  elif defined(__ORBIS__)
 #  else // defined(__MACH__) && defined(__APPLE__)
 #   define ASIO_HAS_GETADDRINFO 1
 #  endif // defined(__MACH__) && defined(__APPLE__)
@@ -1342,10 +1362,12 @@
 // Support for POSIX ssize_t typedef.
 #if !defined(ASIO_DISABLE_SSIZE_T)
 # if defined(__linux__) \
-   || (defined(__MACH__) && defined(__APPLE__))
+   || (defined(__MACH__) && defined(__APPLE__)) \
+   || defined(__ORBIS__)
 #  define ASIO_HAS_SSIZE_T 1
 # endif // defined(__linux__)
         //   || (defined(__MACH__) && defined(__APPLE__))
+        //   || defined(__ORBIS__)
 #endif // !defined(ASIO_DISABLE_SSIZE_T)
 
 // Helper macros to manage the transition away from the old services-based API.
