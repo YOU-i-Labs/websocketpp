@@ -22,7 +22,7 @@
   || defined(__CYGWIN__) \
   || defined(ASIO_WINDOWS_RUNTIME)
 # include <winerror.h>
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
 // Defines from netdb.h
 #define	HOST_NOT_FOUND	1 /* Authoritive Answer Host not found */
 #define	TRY_AGAIN	2 /* Non-Authoritive Host not found, or SERVERFAIL */

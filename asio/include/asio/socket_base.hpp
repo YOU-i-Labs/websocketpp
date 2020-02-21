@@ -67,14 +67,14 @@ public:
 #else
   ASIO_STATIC_CONSTANT(int,
       message_peek = ASIO_OS_DEF(MSG_PEEK));
-#if defined(__ORBIS__)
+#if defined(__ORBIS__) || defined(__PROSPERO__)
 # define MSG_OOB 1
 #endif
   ASIO_STATIC_CONSTANT(int,
       message_out_of_band = ASIO_OS_DEF(MSG_OOB));
   ASIO_STATIC_CONSTANT(int,
       message_do_not_route = ASIO_OS_DEF(MSG_DONTROUTE));
-#if !defined(__ORBIS__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__)
   ASIO_STATIC_CONSTANT(int,
       message_end_of_record = ASIO_OS_DEF(MSG_EOR));
 #endif
@@ -159,7 +159,7 @@ public:
 #if defined(GENERATING_DOCUMENTATION)
   typedef implementation_defined debug;
 #else
-#if !defined(__ORBIS__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__)
   typedef asio::detail::socket_option::boolean<
     ASIO_OS_DEF(SOL_SOCKET), ASIO_OS_DEF(SO_DEBUG)> debug;
 #endif
@@ -194,7 +194,7 @@ public:
 #if defined(GENERATING_DOCUMENTATION)
   typedef implementation_defined do_not_route;
 #else
-#if !defined(__ORBIS__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__)
   typedef asio::detail::socket_option::boolean<
     ASIO_OS_DEF(SOL_SOCKET), ASIO_OS_DEF(SO_DONTROUTE)>
       do_not_route;
@@ -470,7 +470,7 @@ public:
 #if defined(GENERATING_DOCUMENTATION)
   typedef implementation_defined out_of_band_inline;
 #else
-#if !defined(__ORBIS__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__)
   typedef asio::detail::socket_option::boolean<
     ASIO_OS_DEF(SOL_SOCKET), ASIO_OS_DEF(SO_OOBINLINE)>
       out_of_band_inline;

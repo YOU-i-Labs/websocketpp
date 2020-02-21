@@ -41,7 +41,7 @@
 #endif // defined(ASIO_WINDOWS) || defined(__CYGWIN__)
        // || defined(__MACH__) && defined(__APPLE__)
 
-#if defined(__ORBIS__)
+#if defined(__ORBIS__) || defined(__PROSPERO__)
 # include <net.h>
 # include <netinet/in.h>
 # include <sys/param.h>
@@ -133,7 +133,7 @@ socket_type accept(socket_type s, socket_addr_type* addr,
   if (new_s == invalid_socket)
     return new_s;
 
-#if defined(__MACH__) && defined(__APPLE__) || (defined(__FreeBSD__) && !defined(__ORBIS__) /* SO_NOSIGPIPE not available */)
+#if defined(__MACH__) && defined(__APPLE__) || (defined(__FreeBSD__) && !defined(__ORBIS__) && !defined(__PROSPERO__)/* SO_NOSIGPIPE not available */)
   int optval = 1;
   int result = error_wrapper(::setsockopt(new_s,
         SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)), ec);
@@ -353,10 +353,10 @@ int close(socket_type s, state_type& state,
       int flags = ::fcntl(s, F_GETFL, 0);
       if (flags >= 0)
         ::fcntl(s, F_SETFL, flags & ~O_NONBLOCK);
-#elif defined(__ORBIS__) // defined(__SYMBIAN32__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__)
       int optval = 0;
       sceNetSetsockopt(s, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &optval, sizeof(optval));
-# else // defined(__ORBIS__)
+# else // defined(__ORBIS__) || defined(__PROSPERO__)
       ioctl_arg_type arg = 0;
       ::ioctl(s, FIONBIO, &arg);
 # endif // defined(__SYMBIAN32__)
@@ -398,10 +398,10 @@ bool set_user_non_blocking(socket_type s,
     int flag = (value ? (result | O_NONBLOCK) : (result & ~O_NONBLOCK));
     result = error_wrapper(::fcntl(s, F_SETFL, flag), ec);
   }
-#elif defined(__ORBIS__) // defined(__SYMBIAN32__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__)
   int optval = (value ? 1 : 0);
   int result = sceNetSetsockopt(s, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &optval, sizeof(optval));
-#else // defined(__ORBIS__)
+#else // defined(__ORBIS__) || defined(__PROSPERO__)
   ioctl_arg_type arg = (value ? 1 : 0);
   int result = error_wrapper(::ioctl(s, FIONBIO, &arg), ec);
 #endif
@@ -454,10 +454,10 @@ bool set_internal_non_blocking(socket_type s,
     int flag = (value ? (result | O_NONBLOCK) : (result & ~O_NONBLOCK));
     result = error_wrapper(::fcntl(s, F_SETFL, flag), ec);
   }
-#elif defined(__ORBIS__) // defined(__SYMBIAN32__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__)
   int optval = (value ? 1 : 0);
   int result = sceNetSetsockopt(s, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &optval, sizeof(optval));
-#else // defined(__ORBIS__)
+#else // defined(__ORBIS__) || defined(__PROSPERO__)
   ioctl_arg_type arg = (value ? 1 : 0);
   int result = error_wrapper(::ioctl(s, FIONBIO, &arg), ec);
 #endif
@@ -589,7 +589,7 @@ bool non_blocking_connect(socket_type s, asio::error_code& ec)
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
-  || defined(__ORBIS__)
+  || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set write_fds;
   FD_ZERO(&write_fds);
   FD_SET(s, &write_fds);
@@ -638,7 +638,7 @@ bool non_blocking_connect(socket_type s, asio::error_code& ec)
 int socketpair(int af, int type, int protocol,
     socket_type sv[2], asio::error_code& ec)
 {
-#if defined(ASIO_WINDOWS) || defined(__CYGWIN__) || defined(__ORBIS__)
+#if defined(ASIO_WINDOWS) || defined(__CYGWIN__) || defined(__ORBIS__) || defined(__PROSPERO__)
   (void)(af);
   (void)(type);
   (void)(protocol);
@@ -675,7 +675,7 @@ bool sockatmark(socket_type s, asio::error_code& ec)
   if (ec.value() == ENOTTY)
     ec = asio::error::not_socket;
 # endif // defined(ENOTTY)
-#elif (__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   // sockatmark not available
   int value = 0;
   ec = asio::error_code();
@@ -699,7 +699,7 @@ size_t available(socket_type s, asio::error_code& ec)
   ioctl_arg_type value = 0;
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
   int result = error_wrapper(::ioctlsocket(s, FIONREAD, &value), ec);
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   int result = 0;
 #else // defined(ASIO_WINDOWS) || defined(__CYGWIN__)
   int result = error_wrapper(::ioctl(s, FIONREAD, &value), ec);
@@ -1444,7 +1444,7 @@ socket_type socket(int af, int type, int protocol,
   ec = asio::error_code();
 
   return s;
-#elif defined(__MACH__) && defined(__APPLE__) || (defined(__FreeBSD__) && !defined(__ORBIS__) /* SO_NOSIGPIPE not available */)
+#elif defined(__MACH__) && defined(__APPLE__) || (defined(__FreeBSD__) && !defined(__ORBIS__) && !defined(__PROSPERO__) /* SO_NOSIGPIPE not available */)
   socket_type s = error_wrapper(::socket(af, type, protocol), ec);
   if (s == invalid_socket)
     return s;
@@ -1748,7 +1748,7 @@ int getsockname(socket_type s, socket_addr_type* addr,
 int ioctl(socket_type s, state_type& state, int cmd,
     ioctl_arg_type* arg, asio::error_code& ec)
 {
-#if defined(__ORBIS__)
+#if defined(__ORBIS__) || defined(__PROSPERO__)
     ec = asio::error::operation_not_supported;
     return -1;
 #else
@@ -1850,7 +1850,7 @@ int poll_read(socket_type s, state_type state,
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
-  || defined(__ORBIS__)
+  || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set fds;
   FD_ZERO(&fds);
   FD_SET(s, &fds);
@@ -1905,7 +1905,7 @@ int poll_write(socket_type s, state_type state,
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
-  || defined(__ORBIS__)
+  || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set fds;
   FD_ZERO(&fds);
   FD_SET(s, &fds);
@@ -1960,7 +1960,7 @@ int poll_error(socket_type s, state_type state,
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
-  || defined(__ORBIS__)
+  || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set fds;
   FD_ZERO(&fds);
   FD_SET(s, &fds);
@@ -2014,7 +2014,7 @@ int poll_connect(socket_type s, int msec, asio::error_code& ec)
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
-  || defined(__ORBIS__)
+  || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set write_fds;
   FD_ZERO(&write_fds);
   FD_SET(s, &write_fds);
@@ -2155,7 +2155,7 @@ const char* inet_ntop(int af, const void* src, char* dest, size_t length,
         af, src, dest, static_cast<int>(length)), ec);
   if (result == 0 && !ec)
     ec = asio::error::invalid_argument;
-#if !defined(__ORBIS__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__)
   if (result != 0 && af == ASIO_OS_DEF(AF_INET6) && scope_id != 0)
   {
     using namespace std; // For strcat and sprintf.
@@ -2409,7 +2409,7 @@ int inet_pton(int af, const char* src, void* dest,
   int result = error_wrapper(::inet_pton(af, src_ptr, dest), ec);
   if (result <= 0 && !ec)
     ec = asio::error::invalid_argument;
-#if !defined(__ORBIS__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__)
   if (result > 0 && is_v6 && scope_id)
   {
     using namespace std; // For strchr and atoi.
@@ -2464,7 +2464,7 @@ int gethostname(char* name, int namelen, asio::error_code& ec)
         asio::system_category());
     return -1;
   }
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   if (namelen >= 9)
   {
       name = strdup("localhost");
@@ -2511,7 +2511,7 @@ inline asio::error_code translate_netdb_error(int error)
   }
 }
 
-#if defined(__ORBIS__)
+#if defined(__ORBIS__) || defined(__PROSPERO__)
 struct hostent
 {
     char *h_name;
@@ -2555,7 +2555,7 @@ inline hostent* gethostbyaddr(const char* addr, int length, int af,
     return 0;
   *result = *retval;
   return retval;
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   static struct hostent *he = []() -> hostent *{
       static struct hostent he;
       // One time allocation for the name.
@@ -2665,7 +2665,7 @@ inline hostent* gethostbyname(const char* name, int af, struct hostent* result,
     return 0;
   *result = *retval;
   return retval;
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   static struct hostent he;
   static char *aliases[1] = { NULL };
   static char *addr_list[2] = { NULL, NULL };
@@ -2751,7 +2751,7 @@ inline int gai_nsearch(const char* host,
   int search_count = 0;
   if (host == 0 || host[0] == '\0')
   {
-#if !defined(__ORBIS__) // No AI_PASSIVE
+#if !defined(__ORBIS__) && !defined(__PROSPERO__) // No AI_PASSIVE
     if (hints->ai_flags & AI_PASSIVE)
     {
       // No host and AI_PASSIVE implies wildcard bind.
@@ -3029,7 +3029,7 @@ inline int gai_serv(addrinfo_type* aihead,
   }
   else
   {
-#if defined(__ORBIS__)
+#if defined(__ORBIS__) || defined(__PROSPERO__)
     // getservbyname not available
       assert(false);
 #else
@@ -3414,7 +3414,7 @@ inline asio::error_code getnameinfo_emulation(
       sprintf(serv, "%u", ntohs(port));
 #endif // defined(ASIO_HAS_SECURE_RTL)
     }
-#if !defined(__ORBIS__)  // getservbyport is not available
+#if !defined(__ORBIS__) && !defined(__PROSPERO__) // getservbyport is not available
     else
     {
 #if defined(ASIO_HAS_PTHREADS)
@@ -3442,7 +3442,7 @@ inline asio::error_code getnameinfo_emulation(
       ::pthread_mutex_unlock(&mutex);
 #endif // defined(ASIO_HAS_PTHREADS)
     }
-#endif // defined(__ORBIS__)
+#endif // defined(__ORBIS__) || defined(__PROSPERO__)
   }
 
   ec = asio::error_code();
@@ -3698,7 +3698,7 @@ u_long_type network_to_host_long(u_long_type value)
     | (static_cast<u_long_type>(value_p[2]) << 8)
     | static_cast<u_long_type>(value_p[3]);
   return result;
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   return sceNetNtohl(value);
 #else
   return ntohl(value);
@@ -3715,7 +3715,7 @@ u_long_type host_to_network_long(u_long_type value)
   result_p[2] = static_cast<unsigned char>((value >> 8) & 0xFF);
   result_p[3] = static_cast<unsigned char>(value & 0xFF);
   return result;
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   return sceNetHtonl(value);
 #else
   return htonl(value);
@@ -3729,7 +3729,7 @@ u_short_type network_to_host_short(u_short_type value)
   u_short_type result = (static_cast<u_short_type>(value_p[0]) << 8)
     | static_cast<u_short_type>(value_p[1]);
   return result;
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   return sceNetNtohs(value);
 #else
   return ntohs(value);
@@ -3744,7 +3744,7 @@ u_short_type host_to_network_short(u_short_type value)
   result_p[0] = static_cast<unsigned char>((value >> 8) & 0xFF);
   result_p[1] = static_cast<unsigned char>(value & 0xFF);
   return result;
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
   return sceNetHtons(value);
 #else 
   return htons(value);

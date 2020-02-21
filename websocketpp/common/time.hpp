@@ -44,7 +44,7 @@ inline std::tm localtime(std::time_t const & time) {
     memcpy(&tm_snapshot, ::localtime(&time), sizeof(std::tm));
 #elif (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     localtime_s(&tm_snapshot, &time);
-#elif defined(__ORBIS__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__)
     localtime_s(&time, &tm_snapshot);
 #else
     localtime_r(&time, &tm_snapshot); // POSIX  
