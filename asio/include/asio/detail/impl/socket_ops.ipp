@@ -349,7 +349,7 @@ int close(socket_type s, state_type& state,
       ioctl_arg_type arg = 0;
       ::ioctlsocket(s, FIONBIO, &arg);
 #else // defined(ASIO_WINDOWS) || defined(__CYGWIN__)
-# if defined(__SYMBIAN32__)
+# if defined(__SYMBIAN32__) || defined(__native_client__)
       int flags = ::fcntl(s, F_GETFL, 0);
       if (flags >= 0)
         ::fcntl(s, F_SETFL, flags & ~O_NONBLOCK);
@@ -359,7 +359,7 @@ int close(socket_type s, state_type& state,
 # else // defined(__ORBIS__) || defined(__PROSPERO__)
       ioctl_arg_type arg = 0;
       ::ioctl(s, FIONBIO, &arg);
-# endif // defined(__SYMBIAN32__)
+# endif // defined(__SYMBIAN32__) || defined(__native_client__)
 #endif // defined(ASIO_WINDOWS) || defined(__CYGWIN__)
       state &= ~non_blocking;
 
@@ -390,7 +390,7 @@ bool set_user_non_blocking(socket_type s,
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
   ioctl_arg_type arg = (value ? 1 : 0);
   int result = error_wrapper(::ioctlsocket(s, FIONBIO, &arg), ec);
-#elif defined(__SYMBIAN32__)
+#elif defined(__SYMBIAN32__) || defined(__native_client__)
   int result = error_wrapper(::fcntl(s, F_GETFL, 0), ec);
   if (result >= 0)
   {
@@ -398,7 +398,7 @@ bool set_user_non_blocking(socket_type s,
     int flag = (value ? (result | O_NONBLOCK) : (result & ~O_NONBLOCK));
     result = error_wrapper(::fcntl(s, F_SETFL, flag), ec);
   }
-#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__) || defined(__native_client__)
   int optval = (value ? 1 : 0);
   int result = sceNetSetsockopt(s, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &optval, sizeof(optval));
 #else // defined(__ORBIS__) || defined(__PROSPERO__)
@@ -446,7 +446,7 @@ bool set_internal_non_blocking(socket_type s,
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
   ioctl_arg_type arg = (value ? 1 : 0);
   int result = error_wrapper(::ioctlsocket(s, FIONBIO, &arg), ec);
-#elif defined(__SYMBIAN32__)
+#elif defined(__SYMBIAN32__) || defined(__native_client__)
   int result = error_wrapper(::fcntl(s, F_GETFL, 0), ec);
   if (result >= 0)
   {
@@ -454,7 +454,7 @@ bool set_internal_non_blocking(socket_type s,
     int flag = (value ? (result | O_NONBLOCK) : (result & ~O_NONBLOCK));
     result = error_wrapper(::fcntl(s, F_SETFL, flag), ec);
   }
-#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) // defined(__SYMBIAN32__) || defined(__native_client__)
   int optval = (value ? 1 : 0);
   int result = sceNetSetsockopt(s, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &optval, sizeof(optval));
 #else // defined(__ORBIS__) || defined(__PROSPERO__)
@@ -589,6 +589,7 @@ bool non_blocking_connect(socket_type s, asio::error_code& ec)
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
+  || defined(__native_client__) \
   || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set write_fds;
   FD_ZERO(&write_fds);
@@ -603,6 +604,7 @@ bool non_blocking_connect(socket_type s, asio::error_code& ec)
 #else // defined(ASIO_WINDOWS)
       // || defined(__CYGWIN__)
       // || defined(__SYMBIAN32__)
+      // || defined(__native_client__)
   pollfd fds;
   fds.fd = s;
   fds.events = POLLOUT;
@@ -611,6 +613,7 @@ bool non_blocking_connect(socket_type s, asio::error_code& ec)
 #endif // defined(ASIO_WINDOWS)
        // || defined(__CYGWIN__)
        // || defined(__SYMBIAN32__)
+       // || defined(__native_client__)
   if (ready == 0)
   {
     // The asynchronous connect operation is still in progress.
@@ -675,7 +678,7 @@ bool sockatmark(socket_type s, asio::error_code& ec)
   if (ec.value() == ENOTTY)
     ec = asio::error::not_socket;
 # endif // defined(ENOTTY)
-#elif defined(__ORBIS__) || defined(__PROSPERO__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) || defined(__native_client__)
   // sockatmark not available
   int value = 0;
   ec = asio::error_code();
@@ -699,7 +702,7 @@ size_t available(socket_type s, asio::error_code& ec)
   ioctl_arg_type value = 0;
 #if defined(ASIO_WINDOWS) || defined(__CYGWIN__)
   int result = error_wrapper(::ioctlsocket(s, FIONREAD, &value), ec);
-#elif defined(__ORBIS__) || defined(__PROSPERO__)
+#elif defined(__ORBIS__) || defined(__PROSPERO__) || defined(__native_client__)
   int result = 0;
 #else // defined(ASIO_WINDOWS) || defined(__CYGWIN__)
   int result = error_wrapper(::ioctl(s, FIONREAD, &value), ec);
@@ -1772,6 +1775,7 @@ int ioctl(socket_type s, state_type& state, int cmd,
   {
     ec = asio::error_code();
 
+#if !defined(__native_client__)
     // When updating the non-blocking mode we always perform the ioctl syscall,
     // even if the flags would otherwise indicate that the socket is already in
     // the correct state. This ensures that the underlying socket is put into
@@ -1791,6 +1795,7 @@ int ioctl(socket_type s, state_type& state, int cmd,
         state &= ~(user_set_non_blocking | internal_non_blocking);
       }
     }
+#endif
   }
 
   return result;
@@ -1850,6 +1855,7 @@ int poll_read(socket_type s, state_type state,
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
+  || defined(__native_client__) \
   || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set fds;
   FD_ZERO(&fds);
@@ -1875,6 +1881,7 @@ int poll_read(socket_type s, state_type state,
 #else // defined(ASIO_WINDOWS)
       // || defined(__CYGWIN__)
       // || defined(__SYMBIAN32__)
+      // || defined(__native_client__)
   pollfd fds;
   fds.fd = s;
   fds.events = POLLIN;
@@ -1885,6 +1892,7 @@ int poll_read(socket_type s, state_type state,
 #endif // defined(ASIO_WINDOWS)
        // || defined(__CYGWIN__)
        // || defined(__SYMBIAN32__)
+      //  || defined(__native_client__)
   if (result == 0)
     ec = (state & user_set_non_blocking)
       ? asio::error::would_block : asio::error_code();
@@ -1905,6 +1913,7 @@ int poll_write(socket_type s, state_type state,
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
+  || defined(__native_client__) \
   || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set fds;
   FD_ZERO(&fds);
@@ -1930,6 +1939,7 @@ int poll_write(socket_type s, state_type state,
 #else // defined(ASIO_WINDOWS)
       // || defined(__CYGWIN__)
       // || defined(__SYMBIAN32__)
+      // || defined(__native_client__)
   pollfd fds;
   fds.fd = s;
   fds.events = POLLOUT;
@@ -1940,6 +1950,7 @@ int poll_write(socket_type s, state_type state,
 #endif // defined(ASIO_WINDOWS)
        // || defined(__CYGWIN__)
        // || defined(__SYMBIAN32__)
+       // || defined(__native_client__)
   if (result == 0)
     ec = (state & user_set_non_blocking)
       ? asio::error::would_block : asio::error_code();
@@ -1960,6 +1971,7 @@ int poll_error(socket_type s, state_type state,
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
+  || defined(__native_client__) \
   || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set fds;
   FD_ZERO(&fds);
@@ -1985,6 +1997,7 @@ int poll_error(socket_type s, state_type state,
 #else // defined(ASIO_WINDOWS)
       // || defined(__CYGWIN__)
       // || defined(__SYMBIAN32__)
+      // || defined(__native_client__)
   pollfd fds;
   fds.fd = s;
   fds.events = POLLPRI | POLLERR | POLLHUP;
@@ -1995,6 +2008,7 @@ int poll_error(socket_type s, state_type state,
 #endif // defined(ASIO_WINDOWS)
        // || defined(__CYGWIN__)
        // || defined(__SYMBIAN32__)
+       // || defined(__native_client__)
   if (result == 0)
     ec = (state & user_set_non_blocking)
       ? asio::error::would_block : asio::error_code();
@@ -2014,6 +2028,7 @@ int poll_connect(socket_type s, int msec, asio::error_code& ec)
 #if defined(ASIO_WINDOWS) \
   || defined(__CYGWIN__) \
   || defined(__SYMBIAN32__) \
+  || defined(__native_client__) \
   || defined(__ORBIS__) || defined(__PROSPERO__)
   fd_set write_fds;
   FD_ZERO(&write_fds);
@@ -2040,6 +2055,7 @@ int poll_connect(socket_type s, int msec, asio::error_code& ec)
 #else // defined(ASIO_WINDOWS)
       // || defined(__CYGWIN__)
       // || defined(__SYMBIAN32__)
+      // || defined(__native_client__)
   pollfd fds;
   fds.fd = s;
   fds.events = POLLOUT;
@@ -2052,6 +2068,7 @@ int poll_connect(socket_type s, int msec, asio::error_code& ec)
 #endif // defined(ASIO_WINDOWS)
        // || defined(__CYGWIN__)
        // || defined(__SYMBIAN32__)
+       // || defined(__native_client__)
 }
 
 #endif // !defined(ASIO_WINDOWS_RUNTIME)
@@ -2155,7 +2172,7 @@ const char* inet_ntop(int af, const void* src, char* dest, size_t length,
         af, src, dest, static_cast<int>(length)), ec);
   if (result == 0 && !ec)
     ec = asio::error::invalid_argument;
-#if !defined(__ORBIS__) && !defined(__PROSPERO__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__) && !defined(__native_client__)
   if (result != 0 && af == ASIO_OS_DEF(AF_INET6) && scope_id != 0)
   {
     using namespace std; // For strcat and sprintf.
@@ -2409,7 +2426,7 @@ int inet_pton(int af, const char* src, void* dest,
   int result = error_wrapper(::inet_pton(af, src_ptr, dest), ec);
   if (result <= 0 && !ec)
     ec = asio::error::invalid_argument;
-#if !defined(__ORBIS__) && !defined(__PROSPERO__)
+#if !defined(__ORBIS__) && !defined(__PROSPERO__) && !defined(__native_client__)
   if (result > 0 && is_v6 && scope_id)
   {
     using namespace std; // For strchr and atoi.

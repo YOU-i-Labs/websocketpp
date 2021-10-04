@@ -44,7 +44,7 @@ public:
   // Get the name of the IO control command.
   int name() const
   {
-#if defined(__ORBIS__) || defined(__PROSPERO__)
+#if defined(__ORBIS__) || defined(__PROSPERO__) || defined(__native_client__)
       return 0;
 #else
     return static_cast<int>(ASIO_OS_DEF(FIONREAD));
