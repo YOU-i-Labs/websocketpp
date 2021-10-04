@@ -77,8 +77,12 @@
 #  include <sys/select.h>
 # endif
 # include <sys/socket.h>
-# include <sys/uio.h>
-# if !defined(__ORBIS__) && !defined(__PROSPERO__)
+#if defined(__native_client__)
+#  include <nacl_io/ossocket.h>
+#else
+#  include <sys/uio.h>
+#endif
+# if !defined(__ORBIS__) && !defined(__PROSPERO__) && !defined(__native_client__)
 #  include <sys/un.h>
 # endif
 # include <netinet/in.h>
@@ -88,7 +92,9 @@
 # include <arpa/inet.h>
 # if !defined(__ORBIS__) && !defined(__PROSPERO__)
 #  include <netdb.h>
-#  include <net/if.h>
+#  if !defined(__native_client__)
+#   include <net/if.h>
+#  endif
 # endif
 # include <limits.h>
 # if defined(__sun)
@@ -348,7 +354,14 @@ typedef in6_addr in6_addr_type;
 typedef ipv6_mreq in6_mreq_type;
 typedef sockaddr_in6 sockaddr_in6_type;
 typedef sockaddr_storage sockaddr_storage_type;
+#if defined(__native_client__)
+struct sockaddr_un_type {
+   sa_family_t sun_family;
+   char        sun_path[108];
+};
+#else
 typedef sockaddr_un sockaddr_un_type;
+#endif
 typedef addrinfo addrinfo_type;
 typedef ::linger linger_type;
 #endif // defined(__ORBIS__) || defined(__PROSPERO__)
