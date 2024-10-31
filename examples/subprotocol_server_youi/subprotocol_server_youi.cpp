@@ -13,7 +13,7 @@ using websocketpp::lib::bind;
 using websocketpp::lib::ref;
 using namespace websocketpp::lib;
 
-void print_protocols(const std::vector<char*> &supported_protocols)
+void print_protocols(const std::vector<const char*> &supported_protocols)
 {
     std::cout << "Supported sub-protocols: ";
     
@@ -25,7 +25,7 @@ void print_protocols(const std::vector<char*> &supported_protocols)
     std::cout << std::endl;
 }
 
-bool validate_protocol(std::string requested, const std::vector<char*> &supported_protocols)
+bool validate_protocol(std::string requested, const std::vector<const char*> &supported_protocols)
 {
     for (auto p: supported_protocols)
     {
@@ -38,7 +38,7 @@ bool validate_protocol(std::string requested, const std::vector<char*> &supporte
     return false;
 }
 
-bool validate(server & s, const std::vector<char*> &supported_protocols, connection_hdl hdl)
+bool validate(server & s, const std::vector<const char*> &supported_protocols, connection_hdl hdl)
 {
     server::connection_ptr con = s.get_con_from_hdl(hdl);
 
@@ -59,7 +59,10 @@ bool validate(server & s, const std::vector<char*> &supported_protocols, connect
     if (valid_subp_requests.size() > 0)
     {
         con->select_subprotocol(valid_subp_requests[0]);
+        return true;
     }
+    std::cout << "subprotocol used: " << con->get_subprotocol() << std::endl;
+
 
     return true;
 }
@@ -68,9 +71,9 @@ void on_message(server &s, connection_hdl hdl, server::message_ptr msg)
 {
     server::connection_ptr con = s.get_con_from_hdl(hdl);
     
-    std::cout << "Received: " << msg->get_raw_payload() << std::endl;
-    
-    con->send(msg->get_raw_payload());
+    std::cout << "Received: " << msg->get_payload() << std::endl;
+    std::error_code error;
+    s.send(hdl, msg->get_payload(), msg->get_opcode(), error);
 }
 
 int main(int argc, char *argv[])
@@ -79,13 +82,8 @@ int main(int argc, char *argv[])
     {
         server s;
         
-        if(argc < 2)
-        {
-            std::cout << "Error: must pass in a sub_protocol" << std::endl;
-            return 1;
-        }
-        
-        std::vector<char*> supported_protocols(&argv[1], &argv[argc]);
+        std::vector<const char*> supported_protocols;
+        supported_protocols.push_back("youi");
         std::cout << "Starting server with ";
         print_protocols(supported_protocols);
 
